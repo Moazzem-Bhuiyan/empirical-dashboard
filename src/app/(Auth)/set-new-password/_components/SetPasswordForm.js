@@ -12,10 +12,24 @@ import Link from "next/link";
 import React from "react";
 import logo from "@/assets/images/logo.png";
 import { Color } from "antd/es/color-picker";
+import { useResetPasswordMutation } from "@/redux/api/authApi";
+import toast from "react-hot-toast";
 
 export default function SetPasswordForm() {
-  const onSubmit = (data) => {
-    console.log(data);
+  // reset api endpoint
+
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
+  const onSubmit = async (data) => {
+    try {
+      const res = await resetPassword(data).unwrap();
+      if (res?.success) {
+        toast.success(res?.message || "Password reset successfully");
+        localStorage.removeItem("forgetPasswordToken");
+        router.push("/login");
+      }
+    } catch (error) {
+      toast.error(error?.data?.message || "Something went wrong");
+    }
   };
 
   return (
@@ -61,6 +75,8 @@ export default function SetPasswordForm() {
           style={{
             background: "#000000",
           }}
+          loading={isLoading}
+          disabled={isLoading}
         >
           Submit
         </Button>

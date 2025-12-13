@@ -1,134 +1,209 @@
 "use client";
 
 import { RiCloseLargeLine } from "react-icons/ri";
-import { useState } from "react";
-import { Form, Input, Button, Upload, message, Modal, Divider } from "antd";
-import { InboxOutlined } from "@ant-design/icons";
+import { useEffect, useState } from "react";
+import { Form, Input, Button, Upload, Modal, Divider, Space } from "antd";
+import { InboxOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import dynamic from "next/dynamic";
+import toast from "react-hot-toast";
+import { useUpdateProductMutation } from "@/redux/api/productApi";
 
 const { Dragger } = Upload;
+const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
-const EditProductModal = ({ open, setOpen }) => {
+const EditProductModal = ({ open, setOpen, product }) => {
   const [form] = Form.useForm();
   const [description, setDescription] = useState("");
+  const [images, setImages] = useState([]);
+  const [sizes, setSizes] = useState([]);
 
-  const handleSubmit = (values) => {
-    const formData = {
-      ...values,
-      description,
-    };
-    console.log("Form submitted:", formData);
-    message.success("Product submitted successfully!");
-    form.resetFields();
-    setDescription("");
+  const [updateProduct, { isLoading }] = useUpdateProductMutation();
+
+  // 🔥 Set default values
+  useEffect(() => {
+    if (product) {
+      form.setFieldsValue({
+        title: product.product,
+        price: product.price,
+        discount: product.discountPrice || 0,
+      });
+
+      setDescription(product.description || "");
+      setSizes(product.size || []);
+      setImages(
+        (product?.images || []).map((img, index) => ({
+          uid: index,
+          name: "image.png",
+          status: "done",
+          url: img,
+        })),
+      );
+    }
+  }, [product, form]);
+
+  // Size handlers
+  const handleAddSize = () => {
+    setSizes([...sizes, { type: "", quantity: 0 }]);
   };
 
+  const handleRemoveSize = (index) => {
+    setSizes(sizes.filter((_, i) => i !== index));
+  };
+
+  const handleSizeChange = (index, field, value) => {
+    const updated = [...sizes];
+    updated[index][field] = field === "quantity" ? Number(value) : value;
+    setSizes(updated);
+  };
+
+  // Upload config
   const uploadProps = {
-    name: "file",
     multiple: true,
     beforeUpload: (file) => {
-      console.log("File selected:", file.name);
-      message.success(`${file.name} selected successfully.`);
+      file.uid = crypto.randomUUID();
+      setImages((prev) => [...prev, file]);
       return false;
     },
-    onDrop(e) {
-      const files = Array.from(e.dataTransfer.files);
-      console.log(
-        "Dropped files:",
-        files.map((f) => f.name),
-      );
-      message.success(`${files.length} file(s) dropped successfully.`);
+    onRemove: (file) => {
+      setImages((prev) => prev.filter((img) => img.uid !== file.uid));
     },
+    fileList: images,
+  };
+
+  // Submit update
+  const handleSubmit = async (values) => {
+    try {
+      const payload = {
+        title: values.title,
+        description,
+        price: Number(values.price),
+        discount: Number(values.discount || 0),
+        size: sizes,
+      };
+
+      const formData = new FormData();
+      formData.append("data", JSON.stringify(payload));
+
+      images.forEach((img) => {
+        if (img.originFileObj) {
+          formData.append("images", img.originFileObj);
+        }
+      });
+
+      const res = await updateProduct({
+        id: product._id,
+        data: formData,
+      }).unwrap();
+
+      if (res.success) {
+        toast.success("Product updated successfully!");
+        setOpen(false);
+      }
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to update product");
+    }
   };
 
   return (
     <Modal
       open={open}
       footer={null}
-      centered={true}
+      centered
+      width={1100}
       onCancel={() => setOpen(false)}
       closeIcon={false}
-      style={{
-        minWidth: "1100px",
-        position: "relative",
-      }}
     >
       <div
-        className="absolute right-0 top-0 h-12 w-12 cursor-pointer rounded-bl-3xl"
+        className="absolute right-0 top-0 h-12 w-12 cursor-pointer"
         onClick={() => setOpen(false)}
       >
-        <RiCloseLargeLine
-          size={18}
-          color="black"
-          className="absolute left-1/3 top-1/3"
-        />
+        <RiCloseLargeLine size={18} />
       </div>
+
       <h1 className="text-center text-2xl font-semibold">Edit Product</h1>
       <Divider />
-      <div>
-        <Form
-          form={form}
-          layout="vertical"
-          onFinish={handleSubmit}
-          style={{ margin: "0 auto", padding: "0 16px" }}
-        >
-          <div className="flex justify-between gap-10">
-            <div className="w-full">
-              <Form.Item
-                label="Product Title"
-                name="productTitle"
-                rules={[
-                  { required: true, message: "Please enter product title" },
-                ]}
-              >
-                <Input className="h-12" placeholder="JBG Black Stone" />
-              </Form.Item>
 
-              <Form.Item
-                label="Price"
-                name="price"
-                rules={[{ required: true, message: "Please enter price" }]}
-              >
-                <Input className="h-12" placeholder="Enter" type="number" />
-              </Form.Item>
-              <Form.Item label="Discount (optional)" name="discount">
-                <Input className="h-12" placeholder="Enter" type="number" />
-              </Form.Item>
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <div className="flex gap-10">
+          {/* LEFT */}
+          <div className="flex-1">
+            <Form.Item
+              label="Product Title"
+              name="title"
+              rules={[{ required: true }]}
+            >
+              <Input className="h-12" />
+            </Form.Item>
 
-              <Form.Item label="Description">
-                <Input.TextArea
-                  rows={4}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Enter product description"
-                  style={{ height: "200px", marginBottom: "50px" }}
-                />
-              </Form.Item>
-            </div>
-            <div className="w-full">
-              <Form.Item label="Product Image">
-                <Dragger {...uploadProps}>
-                  <p className="ant-upload-drag-icon">
-                    <InboxOutlined />
-                  </p>
-                  <p className="ant-upload-text">Drag & Drop your photo here</p>
-                  <p className="ant-upload-hint">or Upload photo/s</p>
-                  <Button style={{ marginTop: "10px" }}>Choose File</Button>
-                </Dragger>
-              </Form.Item>
-            </div>
+            <Form.Item label="Price" name="price" rules={[{ required: true }]}>
+              <Input type="number" className="h-12" />
+            </Form.Item>
+
+            <Form.Item label="Discount" name="discount">
+              <Input type="number" className="h-12" />
+            </Form.Item>
+
+            <Form.Item label="Product Images">
+              <Dragger {...uploadProps}>
+                <InboxOutlined />
+                <p>Drag & Drop or Click</p>
+              </Dragger>
+            </Form.Item>
+
+            <Form.Item label="Sizes & Quantity">
+              {sizes.map((size, index) => (
+                <Space key={index} className="mb-2">
+                  <Input
+                    value={size.type}
+                    placeholder="Size"
+                    onChange={(e) =>
+                      handleSizeChange(index, "type", e.target.value)
+                    }
+                  />
+                  <Input
+                    type="number"
+                    value={size.quantity}
+                    placeholder="Qty"
+                    onChange={(e) =>
+                      handleSizeChange(index, "quantity", e.target.value)
+                    }
+                  />
+                  <DeleteOutlined onClick={() => handleRemoveSize(index)} />
+                </Space>
+              ))}
+              <Button
+                block
+                type="dashed"
+                icon={<PlusOutlined />}
+                onClick={handleAddSize}
+              >
+                Add Size
+              </Button>
+            </Form.Item>
           </div>
 
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              style={{ width: "100%", height: "40px", background: "#BE9955" }}
-            >
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
-      </div>
+          {/* RIGHT */}
+          <div className="flex-1">
+            <Form.Item label="Description">
+              <JoditEditor
+                value={description}
+                onBlur={(content) => setDescription(content)}
+                config={{ height: 400 }}
+              />
+            </Form.Item>
+          </div>
+        </div>
+
+        <Button
+          htmlType="submit"
+          loading={isLoading}
+          type="primary"
+          block
+          style={{ background: "#BE9955" }}
+        >
+          Update Product
+        </Button>
+      </Form>
     </Modal>
   );
 };

@@ -2,17 +2,14 @@
 
 import { Button } from "antd";
 import { Bell } from "lucide-react";
-import { Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import userAvatar from "@/assets/images/user-avatar-lg.png";
 import { usePathname } from "next/navigation";
 import { Layout } from "antd";
 import { AlignJustify } from "lucide-react";
-import { Badge } from "antd";
-import { Search } from "lucide-react";
 import { useGetMyProfileQuery } from "@/redux/api/authApi";
 const { Header } = Layout;
+import nouser from "@/assets/images/nouser.png";
 
 export default function HeaderContainer({ collapsed, setCollapsed }) {
   const pathname = usePathname();
@@ -52,12 +49,11 @@ export default function HeaderContainer({ collapsed, setCollapsed }) {
           <Search color="#1C1B1F" size={22} strokeWidth={2.5} />
         </button> */}
 
-        <Link href="/admin/notification" className="relative !leading-none">
-          {/* Notification dot indicator */}
+        {/* <Link href="/admin/notification" className="relative !leading-none">
           <div className="absolute -right-1 -top-1.5 size-3 rounded-full bg-[#000000]" />
 
           <Bell fill="#1C1B1F" stroke="#1C1B1F" size={22} />
-        </Link>
+        </Link> */}
 
         {/* User */}
         <Link
@@ -65,7 +61,7 @@ export default function HeaderContainer({ collapsed, setCollapsed }) {
           className="group flex items-center gap-x-2 text-black hover:text-primary-blue"
         >
           <Image
-            src={user?.photoUrl}
+            src={user?.photoUrl || nouser}
             alt="Admin avatar"
             width={52}
             height={52}

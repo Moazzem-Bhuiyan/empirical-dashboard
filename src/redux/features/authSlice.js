@@ -21,12 +21,12 @@ const authSlice = createSlice({
       state.token = token;
 
       // Set token to cookie for middleware accessibility
-      Cookies.set("fit_Check_Dahboard_token", token, { path: "/" });
+      Cookies.set("empirical-dashboard-token", token, { path: "/" });
     },
 
     logout: (state) => {
       // Remove token for cookies
-      Cookies.remove("fit_Check_Dahboard_token", { path: "/" });
+      Cookies.remove("empirical-dashboard-token", { path: "/" });
       state.user = null;
       state.token = null;
     },

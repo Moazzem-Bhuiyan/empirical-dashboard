@@ -7,6 +7,7 @@ import UserStatistics from "./UserStatics";
 import { useState } from "react";
 import { Spin } from "antd";
 import { useGetDashboardDataQuery } from "@/redux/api/dashboardApi";
+import AccDetailsTable from "../../account-details/_components/AccDetailsTable";
 
 export default function DashboardContainer() {
   const [earningCurrentYear, setearningCurrentYear] = useState(
@@ -113,7 +114,7 @@ export default function DashboardContainer() {
 
       {/* Recent Users Table */}
       <section>
-        <RecentUserTable />
+        <AccDetailsTable limit={5} />
       </section>
     </div>
   );

@@ -3,7 +3,11 @@ const { baseApi } = require("./baseApi");
 const ProductApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getProducts: builder.query({
-      query: () => "/products",
+      query: () => ({
+        url: "/products",
+        method: "GET",
+      }),
+      providesTags: ["product"],
     }),
     addProduct: builder.mutation({
       query: (data) => ({
@@ -11,6 +15,7 @@ const ProductApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      invalidatesTags: ["product"],
     }),
 
     deleteProduct: builder.mutation({
@@ -18,6 +23,16 @@ const ProductApi = baseApi.injectEndpoints({
         url: `/products/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["product"],
+    }),
+
+    updateProduct: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/products/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["product"],
     }),
   }),
 });
@@ -26,4 +41,5 @@ export const {
   useGetProductsQuery,
   useAddProductMutation,
   useDeleteProductMutation,
+  useUpdateProductMutation,
 } = ProductApi;

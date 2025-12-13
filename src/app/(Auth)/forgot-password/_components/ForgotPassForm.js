@@ -10,12 +10,28 @@ import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import logo from "@/assets/images/logo.png";
 import { useRouter } from "next/navigation";
+import { useForgetPasswordMutation } from "@/redux/api/authApi";
+import toast from "react-hot-toast";
 
 export default function ForgotPassForm() {
   const router = useRouter();
-  const onSubmit = (data) => {
-    console.log(data);
-    router.push("/otp-verification");
+
+  const [forgetPassword, { isLoading }] = useForgetPasswordMutation();
+  const onSubmit = async (data) => {
+    try {
+      const res = await forgetPassword(data).unwrap();
+      if (res?.success) {
+        toast.success(res?.message);
+        localStorage.setItem("forgetPasswordToken", res?.data?.token);
+        router.push("/otp-verification");
+      }
+    } catch (error) {
+      if (error?.data?.message) {
+        toast.error(error?.data?.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
   };
 
   return (
@@ -54,6 +70,8 @@ export default function ForgotPassForm() {
           style={{
             background: "#000000",
           }}
+          disabled={isLoading}
+          loading={isLoading}
         >
           Submit
         </Button>

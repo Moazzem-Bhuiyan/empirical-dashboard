@@ -11,48 +11,45 @@ import toast from "react-hot-toast";
 const { Dragger } = Upload;
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
-const AddproductModal = ({ open, setOpen }) => {
+const AddProductModal = ({ open, setOpen }) => {
   const [form] = Form.useForm();
   const [description, setDescription] = useState("");
-  const [images, setImages] = useState([]);
+  const [fileList, setFileList] = useState([]);
   const [sizes, setSizes] = useState([{ type: "m", quantity: 0 }]);
 
   const [addProduct, { isLoading }] = useAddProductMutation();
 
-  // Add new size row
+  /* -------------------- Size handlers -------------------- */
   const handleAddSize = () => {
     setSizes([...sizes, { type: "", quantity: 0 }]);
   };
 
-  // Remove size row
   const handleRemoveSize = (index) => {
     setSizes(sizes.filter((_, i) => i !== index));
   };
 
-  // Update size field
   const handleSizeChange = (index, field, value) => {
     const updated = [...sizes];
     updated[index][field] = field === "quantity" ? Number(value) : value;
     setSizes(updated);
   };
 
-  // Upload component config
+  /* -------------------- Upload config (FIXED) -------------------- */
   const uploadProps = {
-    name: "file",
     multiple: true,
-    beforeUpload: (file) => {
-      file.uid = crypto.randomUUID(); // Ensure unique uid
-      setImages((prev) => [...prev, file]);
-      return false; // prevent uploading
+    fileList,
+    beforeUpload: () => false, // stop auto upload
+    onChange: ({ fileList: newFileList }) => {
+      setFileList(newFileList);
     },
     onRemove: (file) => {
-      setImages((prev) => prev.filter((img) => img.uid !== file.uid));
+      setFileList((prev) => prev.filter((f) => f.uid !== file.uid));
     },
   };
 
-  // Submit Product
+  /* -------------------- Submit -------------------- */
   const handleSubmit = async (values) => {
-    if (!images.length) {
+    if (!fileList.length) {
       return toast.error("Please add at least one product image");
     }
 
@@ -68,20 +65,19 @@ const AddproductModal = ({ open, setOpen }) => {
       const formData = new FormData();
       formData.append("data", JSON.stringify(productData));
 
-      // FIX: Append each image separately
-      images.forEach((file) => {
-        formData.append("images", file);
+      fileList.forEach((file) => {
+        formData.append("images", file.originFileObj);
       });
 
       const res = await addProduct(formData).unwrap();
 
       if (res.success) {
         toast.success("Product added successfully!");
-        // Reset everything
         form.resetFields();
         setDescription("");
-        setImages([]);
+        setFileList([]);
         setSizes([{ type: "m", quantity: 0 }]);
+        setOpen(false);
       }
     } catch (error) {
       toast.error(error?.data?.message || "Failed to add product");
@@ -97,16 +93,12 @@ const AddproductModal = ({ open, setOpen }) => {
       closeIcon={false}
       width={1100}
     >
-      {/* Close Button */}
+      {/* Close */}
       <div
         className="absolute right-0 top-0 h-12 w-12 cursor-pointer rounded-bl-3xl"
         onClick={() => setOpen(false)}
       >
-        <RiCloseLargeLine
-          size={18}
-          color="black"
-          className="absolute left-1/3 top-1/3"
-        />
+        <RiCloseLargeLine size={18} className="absolute left-1/3 top-1/3" />
       </div>
 
       <h1 className="text-center text-2xl font-semibold">Add Product</h1>
@@ -116,53 +108,44 @@ const AddproductModal = ({ open, setOpen }) => {
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        style={{ margin: "0 auto", padding: "0 16px" }}
+        style={{ padding: "0 16px" }}
       >
         <div className="flex gap-10">
-          {/* LEFT COLUMN */}
+          {/* LEFT */}
           <div className="flex-1">
             <Form.Item
               label="Product Title"
               name="title"
-              rules={[
-                { required: true, message: "Please enter product title" },
-              ]}
+              rules={[{ required: true }]}
             >
-              <Input
-                placeholder="Unisex Puffer Winter Jacket"
-                className="h-12"
-              />
+              <Input className="h-12" />
             </Form.Item>
 
-            <Form.Item
-              label="Price"
-              name="price"
-              rules={[{ required: true, message: "Please enter price" }]}
-            >
-              <Input type="number" placeholder="4500" className="h-12" />
+            <Form.Item label="Price" name="price" rules={[{ required: true }]}>
+              <Input type="number" className="h-12" />
             </Form.Item>
 
-            <Form.Item label="Discount (optional)" name="discount">
-              <Input type="number" placeholder="0" className="h-12" />
+            <Form.Item label="Discount" name="discount">
+              <Input type="number" className="h-12" />
             </Form.Item>
 
-            {/* Image Upload */}
+            {/* Images */}
             <Form.Item label="Product Images">
               <Dragger {...uploadProps}>
                 <p className="ant-upload-drag-icon">
                   <InboxOutlined />
                 </p>
-                <p className="ant-upload-text">Drag & Drop your photos here</p>
-                <p className="ant-upload-hint">or Click to upload</p>
+                <p className="ant-upload-text">Drag & Drop images here</p>
+                <p className="ant-upload-hint">or click to upload</p>
               </Dragger>
             </Form.Item>
 
             {/* Sizes */}
-            <Form.Item label="Sizes & Quantities">
+            <Form.Item label="Sizes & Quantity">
               {sizes.map((size, index) => (
                 <Space key={index} className="mb-2">
                   <Input
-                    placeholder="Size (m, l, xl)"
+                    placeholder="Size"
                     value={size.type}
                     onChange={(e) =>
                       handleSizeChange(index, "type", e.target.value)
@@ -185,46 +168,38 @@ const AddproductModal = ({ open, setOpen }) => {
 
               <Button
                 type="dashed"
-                onClick={handleAddSize}
                 block
                 icon={<PlusOutlined />}
+                onClick={handleAddSize}
               >
                 Add Size
               </Button>
             </Form.Item>
           </div>
 
-          {/* RIGHT COLUMN */}
+          {/* RIGHT */}
           <div className="flex-1">
-            <Form.Item label="Description :" name="description">
+            <Form.Item label="Description">
               <JoditEditor
                 value={description}
-                config={{
-                  height: 500,
-                  placeholder: "Write your product details...",
-                  uploader: {
-                    insertImageAsBase64URI: true,
-                  },
-                }}
+                config={{ height: 500 }}
                 onBlur={(content) => setDescription(content)}
               />
             </Form.Item>
           </div>
         </div>
 
-        <Form.Item>
-          <Button
-            type="primary"
-            htmlType="submit"
-            style={{ width: "100%", background: "#BE9955" }}
-            loading={isLoading}
-          >
-            Submit
-          </Button>
-        </Form.Item>
+        <Button
+          htmlType="submit"
+          type="primary"
+          loading={isLoading}
+          style={{ width: "100%", background: "#BE9955" }}
+        >
+          Submit
+        </Button>
       </Form>
     </Modal>
   );
 };
 
-export default AddproductModal;
+export default AddProductModal;

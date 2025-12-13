@@ -7,18 +7,21 @@ const OrderApi = baseApi.injectEndpoints({
         url: `/orders?limit=${limit}&page=${page}&searchTerm=${searchText}`,
         method: "GET",
       }),
+      providesTags: ["order"],
     }),
     deleteOrder: builder.mutation({
       query: (id) => ({ url: `/orders/${id}`, method: "DELETE" }),
+      invalidatesTags: ["order"],
     }),
     updateOrder: builder.mutation({
-      query: (payload) => ({
-        url: `/orders/${payload.id}`,
-        method: "PUT",
+      query: ({ orderId, status }) => ({
+        url: `/orders/${orderId}`,
+        method: "PATCH",
         body: {
-          status: payload.status,
+          status: status,
         },
       }),
+      invalidatesTags: ["order"],
     }),
   }),
 });

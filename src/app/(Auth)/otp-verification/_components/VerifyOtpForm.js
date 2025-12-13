@@ -11,12 +11,28 @@ import Link from "next/link";
 import React from "react";
 import logo from "@/assets/images/logo.png";
 import { useRouter } from "next/navigation";
+import { useVerifyEmailMutation } from "@/redux/api/authApi";
+import toast from "react-hot-toast";
 
 export default function VerifyOtpForm() {
   const router = useRouter();
-  const onSubmit = (data) => {
-    console.log(data);
-    router.push("/set-new-password");
+  const [verifyOtp, { isLoading }] = useVerifyEmailMutation();
+  const onSubmit = async (data) => {
+    try {
+      const res = await verifyOtp(data).unwrap();
+      if (res?.success) {
+        toast.success(res?.message || "OTP verified successfully");
+        router.push("/set-new-password");
+      } else {
+        throw new Error(res?.message || "Verification failed");
+      }
+    } catch (error) {
+      if (error?.data?.message) {
+        toast.error(error?.data?.message);
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
   };
 
   return (
@@ -47,6 +63,8 @@ export default function VerifyOtpForm() {
             background: "#000000",
           }}
           htmlType="submit"
+          loading={isLoading}
+          disabled={isLoading}
         >
           Submit
         </Button>

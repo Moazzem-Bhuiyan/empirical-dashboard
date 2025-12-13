@@ -12,12 +12,15 @@ import {
   useDeleteEventMutation,
   useGetEventsQuery,
 } from "@/redux/api/eventApi";
+import EditEventModal from "./EditEvent";
 
 export default function AllEvent() {
   const router = useRouter();
   const [searchText, setSearchText] = useState("");
   const [open, setOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   // Server-side pagination: pass page and limit to API
   const {
@@ -81,14 +84,14 @@ export default function AllEvent() {
           type="primary"
           icon={<PlusCircle size={18} />}
           className="flex items-center"
-          style={{ backgroundColor: "#BE9955" }}
+          style={{ backgroundColor: "#BE9955", padding: "22px 20px" }}
         >
           Upload Event
         </Button>
       </div>
 
       {/* Articles Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-5">
         {articles.length > 0 ? (
           articles.map((article) => (
             <div
@@ -114,7 +117,10 @@ export default function AllEvent() {
 
                 <div className="flex items-center gap-3">
                   <Button
-                    onClick={() => handleEdit(article._id)}
+                    onClick={() => {
+                      setSelectedEvent(article);
+                      setEditOpen(true);
+                    }}
                     icon={<Edit2 size={16} />}
                     className="flex items-center gap-1 rounded-lg bg-blue-500 px-3 py-1 text-white hover:bg-blue-600"
                   >
@@ -164,6 +170,12 @@ export default function AllEvent() {
 
       {/* Add Article Modal */}
       <AddEventModal open={open} setOpen={setOpen} />
+      {/* Edit Article Modal */}
+      <EditEventModal
+        open={editOpen}
+        setOpen={setEditOpen}
+        event={selectedEvent}
+      />
     </div>
   );
 }

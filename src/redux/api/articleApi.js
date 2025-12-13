@@ -24,6 +24,14 @@ const ArticleApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["article"],
     }),
+    updateArticle: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/articles/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: ["article"],
+    }),
   }),
 });
 
@@ -31,4 +39,5 @@ export const {
   useGetArticlesQuery,
   useAddArticleMutation,
   useDeleteArticleMutation,
+  useUpdateArticleMutation,
 } = ArticleApi;

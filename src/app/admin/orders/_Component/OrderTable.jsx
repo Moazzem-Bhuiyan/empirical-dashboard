@@ -1,13 +1,18 @@
 "use client";
 
-import { Input, Table, Tag, Button, Descriptions } from "antd";
+import { Input, Table, Tag, Button, Descriptions, Dropdown, Menu } from "antd";
 import { Tooltip } from "antd";
 import { ConfigProvider } from "antd";
-import { Search, Eye, Trash } from "lucide-react";
+import { Search, Eye, Trash, EllipsisVertical, Filter } from "lucide-react";
 import { useState } from "react";
 import OrderDetailsModal from "@/components/SharedModals/OrderDetailsModal";
 import CustomConfirm from "@/components/CustomConfirm/CustomConfirm";
-import { useGetOrdersQuery } from "@/redux/api/orderApi";
+import {
+  useDeleteOrderMutation,
+  useGetOrdersQuery,
+  useUpdateOrderMutation,
+} from "@/redux/api/orderApi";
+import toast from "react-hot-toast";
 
 export default function OrderTable() {
   const [searchText, setSearchText] = useState("");
@@ -22,6 +27,48 @@ export default function OrderTable() {
     limit: 10,
     searchText,
   });
+  const [updateOrderStatus] = useUpdateOrderMutation();
+  // delete order api
+  const [deleteOrder] = useDeleteOrderMutation();
+  // Available status options
+  const statusOptions = ["processing", "onTheWay", "delivered"];
+  // Handle status change
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await updateOrderStatus({ orderId, status: newStatus }).unwrap();
+      toast.success(`Order status updated to ${newStatus} successfully`);
+    } catch (error) {
+      toast.error(
+        `Failed to update order status: ${error?.data?.message || error.message}`,
+      );
+    }
+  };
+  // Status dropdown menu
+  const getStatusMenu = (orderId, currentStatus) => (
+    <Menu>
+      {statusOptions.map((status) => (
+        <Menu.Item
+          key={status}
+          disabled={status === currentStatus}
+          onClick={() => handleStatusChange(orderId, status)}
+        >
+          {status.charAt(0).toUpperCase() + status.slice(1)}
+        </Menu.Item>
+      ))}
+    </Menu>
+  );
+
+  // delete order handaler
+  const handleDeleteOrder = async (orderId) => {
+    try {
+      const res = await deleteOrder(orderId).unwrap();
+      if (res.success) {
+        toast.success("Order deleted successfully!");
+      }
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to delete order");
+    }
+  };
 
   const tableData = data?.data?.map((item) => ({
     id: item._id,
@@ -55,18 +102,46 @@ export default function OrderTable() {
     {
       title: "Status",
       dataIndex: "status",
+      filters: [
+        {
+          text: "Processing",
+          value: "processing",
+        },
+        {
+          text: "On The Way",
+          value: "onTheWay",
+        },
+        {
+          text: "Delivered",
+          value: "delivered",
+        },
+      ],
+      filterIcon: () => (
+        <Filter
+          size={18}
+          color="#000000"
+          className="flex items-start justify-start"
+        />
+      ),
+      onFilter: (value, record) => record.status.indexOf(value) === 0,
       render: (value) => {
         let color;
         switch (value) {
-          case "pending":
-            color = "orange";
+          case "processing":
+            color = "red";
+
             break;
-          case "completed":
+          case "onTheWay":
+            color = "blue";
+
+            break;
+          case "delivered":
             color = "green";
+
             break;
         }
         return (
-          <Tag color={color} className="font-medium">
+          <Tag color={color} className="font-bold uppercase">
             {value}
           </Tag>
         );
@@ -91,7 +166,7 @@ export default function OrderTable() {
             <CustomConfirm
               title={"Delete Order Data ?"}
               onConfirm={() => {
-                message.success("Order deleted successfully");
+                handleDeleteOrder(record.id);
               }}
               content={"Are you sure to delte this order?"}
               description={"Are you sure to delte this order?"}
@@ -100,6 +175,16 @@ export default function OrderTable() {
                 <Trash color="red" size={20} />
               </button>
             </CustomConfirm>
+          </Tooltip>
+          <Tooltip title="Change status">
+            <Dropdown
+              overlay={getStatusMenu(record.id, record?.status)}
+              trigger={["click"]}
+            >
+              <button>
+                <EllipsisVertical color="#F16365" size={22} />
+              </button>
+            </Dropdown>
           </Tooltip>
         </div>
       ),

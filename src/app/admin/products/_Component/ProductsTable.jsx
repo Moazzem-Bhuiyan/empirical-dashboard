@@ -17,7 +17,7 @@ export default function ProductsTable() {
   const [searchText, setSearchText] = useState("");
   const [addProductModalOpen, setShowCreateCategoryModal] = useState(false);
   const [editProductModalOpen, seteditProductModalOpen] = useState(false);
-
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const { data: products, isLoading } = useGetProductsQuery({
     page: 1,
     limit: 10,
@@ -32,9 +32,14 @@ export default function ProductsTable() {
     id: item?.id,
     product: item?.title,
     userImg: item?.images[0],
+    images: item?.images,
     price: `${item?.price}`,
     stock: item?.stock,
     category: item?.category || "N/A",
+    description: item?.description,
+    status: item?.status,
+    size: item?.size || [],
+    discountPrice: item?.discountPrice || 0,
   }));
 
   const columns = [
@@ -74,7 +79,12 @@ export default function ProductsTable() {
       render: (_, record) => (
         <div className="flex gap-3">
           <Tooltip title="Edit Product">
-            <button onClick={() => seteditProductModalOpen(true)}>
+            <button
+              onClick={() => {
+                setSelectedProduct(record);
+                seteditProductModalOpen(true);
+              }}
+            >
               <Edit color="#1B70A6" size={20} />
             </button>
           </Tooltip>
@@ -143,6 +153,7 @@ export default function ProductsTable() {
       <EditProductModal
         open={editProductModalOpen}
         setOpen={seteditProductModalOpen}
+        product={selectedProduct}
       />
     </ConfigProvider>
   );

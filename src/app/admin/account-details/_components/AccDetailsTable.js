@@ -128,24 +128,24 @@ export default function AccDetailsTable({ limit }) {
       title: "Status",
       dataIndex: "status",
 
-      filters: [
-        {
-          text: "Customer",
-          value: "Customer",
-        },
-        {
-          text: "Service Provider",
-          value: "serviceProvider",
-        },
-      ],
-      filterIcon: () => (
-        <Filter
-          size={18}
-          color="#fff"
-          className="flex items-start justify-start"
-        />
-      ),
-      onFilter: (value, record) => record.accountType.indexOf(value) === 0,
+      // filters: [
+      //   {
+      //     text: "Customer",
+      //     value: "Customer",
+      //   },
+      //   {
+      //     text: "Service Provider",
+      //     value: "serviceProvider",
+      //   },
+      // ],
+      // filterIcon: () => (
+      //   <Filter
+      //     size={18}
+      //     color="#fff"
+      //     className="flex items-start justify-start"
+      //   />
+      // ),
+      // onFilter: (value, record) => record.accountType.indexOf(value) === 0,
       render: (value) => (
         <span
           className={`rounded-full border border-gray-300 px-3 py-1 font-semibold ${
