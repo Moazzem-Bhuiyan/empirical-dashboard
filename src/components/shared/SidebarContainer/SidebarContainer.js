@@ -2,17 +2,10 @@
 
 import "./Sidebar.css";
 import logo from "@/assets/logos/logoforsideber.png";
+import { logout } from "@/redux/features/authSlice";
 import { Menu } from "antd";
 import Sider from "antd/es/layout/Sider";
-import {
-  Album,
-  CircleDollarSign,
-  DollarSign,
-  MessageSquareMore,
-  Plus,
-  ShoppingCart,
-} from "lucide-react";
-import { Shapes } from "lucide-react";
+import { CircleDollarSign } from "lucide-react";
 import { ScrollText } from "lucide-react";
 import { LogOut } from "lucide-react";
 import { SlidersVertical } from "lucide-react";
@@ -21,22 +14,22 @@ import { House } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { RiFeedbackFill, RiFeedbackLine } from "react-icons/ri";
+import toast from "react-hot-toast";
+
+import { useDispatch } from "react-redux";
 
 const SidebarContainer = ({ collapsed }) => {
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
   const router = useRouter();
 
   // Logout handler
   const onClick = (e) => {
-    // if (e.key === "logout") {
-    //   dispatch(logout());
-    //   router.refresh();
-    //   router.push("/login");
-
-    //   Success_model({ title: "Logout successful" });
-    // }
-    console.log("logout success");
+    if (e.key === "logout") {
+      dispatch(logout());
+      router.refresh();
+      router.push("/login");
+      toast.success("Logged out successfully");
+    }
   };
 
   const navLinks = [
