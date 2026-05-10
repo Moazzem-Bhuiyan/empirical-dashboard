@@ -9,7 +9,7 @@ export default function ReduxProviders({ children }) {
     <Provider store={store}>
       <PersistGate
         loading={
-          <div className="flex min-h-screen items-center justify-center">
+          <div className="!flex !min-h-screen !items-center !justify-center">
             <CustomLoader />
           </div>
         }

@@ -5,7 +5,14 @@ import logo from "@/assets/logos/logoforsideber.png";
 import { logout } from "@/redux/features/authSlice";
 import { Menu } from "antd";
 import Sider from "antd/es/layout/Sider";
-import { CircleDollarSign } from "lucide-react";
+import {
+  Blocks,
+  BookImage,
+  CalendarMinus,
+  CircleDollarSign,
+  ListOrdered,
+  PackageSearch,
+} from "lucide-react";
 import { ScrollText } from "lucide-react";
 import { LogOut } from "lucide-react";
 import { SlidersVertical } from "lucide-react";
@@ -45,33 +52,33 @@ const SidebarContainer = ({ collapsed }) => {
     },
     {
       key: "Product-Overview",
-      icon: <CircleUser size={21} strokeWidth={2} />,
+      icon: <PackageSearch size={21} strokeWidth={2} />,
       label: <Link href={"/admin/products"}>Product-Overview</Link>,
     },
     {
       key: "order-Overview",
-      icon: <CircleUser size={21} strokeWidth={2} />,
+      icon: <ListOrdered size={21} strokeWidth={2} />,
       label: <Link href={"/admin/orders"}>Order-Overview</Link>,
     },
     {
       key: "gallery-Overview",
-      icon: <CircleUser size={21} strokeWidth={2} />,
+      icon: <BookImage size={21} strokeWidth={2} />,
       label: <Link href={"/admin/addbanner"}>Gallery Management</Link>,
     },
     {
       key: "article-Overview",
-      icon: <CircleUser size={21} strokeWidth={2} />,
+      icon: <ScrollText size={21} strokeWidth={2} />,
       label: <Link href={"/admin/article"}>Finance Article</Link>,
     },
     {
       key: "event-Overview",
-      icon: <CircleUser size={21} strokeWidth={2} />,
+      icon: <CalendarMinus size={21} strokeWidth={2} />,
       label: <Link href={"/admin/event"}>Event Management</Link>,
     },
 
     {
       key: "earnings",
-      icon: <CircleDollarSign size={21} strokeWidth={2} />,
+      icon: <Blocks size={21} strokeWidth={2} />,
       label: <Link href={"/admin/earnings"}>Earnings Overview</Link>,
     },
     {

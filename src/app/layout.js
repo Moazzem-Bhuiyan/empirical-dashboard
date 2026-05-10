@@ -1,5 +1,5 @@
 import localFont from "next/font/local";
-import { DM_Sans, Montserrat } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import "./globals.css";
 import Providers from "../lib/Providers";
 import ReduxProviders from "@/redux/lib/ReduxProvider";
@@ -13,12 +13,6 @@ const generalSans = localFont({
   subsets: ["latin"],
 });
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  display: "swap",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "900"],
-});
 const Mont_serrat = Montserrat({
   variable: "--font-montserrat",
   display: "swap",
@@ -28,11 +22,43 @@ const Mont_serrat = Montserrat({
 
 export const metadata = {
   title: {
-    default: "Empirical-Admin-Dashboard",
-    template: "%s | Empirical-web-Dashboard",
+    default: "Empirical -  Website",
+    template: "%s | Empirical -  Website",
   },
   description:
-    "Empirical - Manage and monitor your empirical applications with ease.",
+    "Empirical is a cutting-edge platform that leverages advanced technologies to provide innovative solutions for data analysis, visualization, and decision-making. Our mission is to empower businesses and individuals with the tools they need to harness the power of their data effectively.",
+  keywords: [
+    "Empirical, data analysis, data visualization, decision-making, innovative solutions, cutting-edge platform, data-driven insights, business intelligence, data science, machine learning",
+  ],
+  authors: [{ name: "Empirical Team", url: "https://imperialempirical.com" }],
+  openGraph: {
+    title: "Empirical -  Website",
+    description:
+      "Empirical is a Building fashion that speaks to you, while respecting the planet and empowering communities through ethical practices.",
+    url: "https://imperialempirical.com",
+    siteName: "Empirical",
+    images: [
+      {
+        url: "https://i.ibb.co/fzjJ8WxQ/image.png",
+        width: 1200,
+        height: 630,
+        alt: "Empirical Open Graph Image",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Empirical -  Website",
+    description:
+      "Empirical is a Building fashion that speaks to you, while respecting the planet and empowering communities through ethical practices.",
+    images: ["https://i.ibb.co/fzjJ8WxQ/image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }) {
